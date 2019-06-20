@@ -1,0 +1,106 @@
+﻿/****************************************************************************************************
+* Copyright (C) 2017-2019 FengYunChuanShuo
+*
+* Toon Shading base color cg functions
+*
+* Author:   Y.Moon <chglove@live.cn>
+* Version:  0.1
+* Created:  2017-08-08
+*
+***************************************************************************************************/
+
+v2f_c vert_c(a2v_c v)
+{
+    v2f_c o;
+
+    float3 wn = UnityObjectToWorldNormal(v.normal);
+    float3 wp = mul(unity_ObjectToWorld, v.vertex);
+
+    #if _INVERTED
+        wp.z = -wp.z;
+        wn.z = -wn.z;
+
+        #if _INVERT_LIGHT
+            wn.x = -wn.x;
+        #endif
+
+        o.pos = UnityWorldToClipPos(wp);
+    #else
+        o.pos = UnityObjectToClipPos(v.vertex);
+    #endif
+
+    o.wn    = wn;
+    o.wp    = wp.xyz;
+    o.uv    = TRANSFORM_TEX(v.uv, _MainTex);
+    o.color = v.color;
+
+    #if _DISSOLVE
+        DISSOLVE_TEXCOORD;
+    #endif
+
+    return o;
+}
+
+float4 frag_c(v2f_c i) : SV_Target
+{
+    #if _DISSOLVE
+        DISSOLVE_CLIP;
+    #endif
+
+    fixed4 ccx = tex2D(_MainTex, i.uv);
+    fixed4 ssx = tex2D(_SSSTex, i.uv);
+    fixed4 ilm = tex2D(_ILMTex, i.uv);
+
+    fixed3 ccc = ccx.rgb;
+    fixed3 sss = ccc * ssx.rgb;
+
+    fixed3 wn = normalize(i.wn);
+    fixed3 wl = normalize(UnityWorldSpaceLightDir(i.wp));
+
+    float shadowBias = ((i.color.r - 0.5) * _ShadowContrast + 0.5) * ilm.g;
+    fixed diff = dot(wn, wl) + shadowBias - 1;
+    fixed specSize = 1 - ilm.b;
+    fixed specStrength = ilm.r;
+
+    if (diff < 0)
+    {
+        if (diff < -specSize - 0.5f && specStrength <= 0.5f)
+            ccc = sss * (0.5f + specStrength);
+        else
+            ccc = sss;
+    }
+    else
+    {
+        if (diff * 1.8f > specSize && specStrength >= 0.5f)
+            ccc = ccc * (0.5f + specStrength);
+    }
+
+    if (ilm.a < _DarkenInnerLine) ccc *= _DarkenInnerLine;
+    else ccc *= ilm.a;
+
+    ccc *= 1 + (1 - ccx.a) * _BloomMaskThreshod;
+
+    #if _RIM_LIGHT || _DEF_RIM_LIGHT
+        #if _INVERTED
+            wn.x = -wn.x;
+        #endif
+
+        #if _RIM_LIGHT
+        half3 rc = _RimIntensity * _RimColor.rgb;
+        #else
+        half3 rc = _DefRimIntensity * _DefRimColor.rgb;
+        #endif
+
+        fixed3 v = normalize(UnityWorldSpaceViewDir(i.wp));
+        fixed vdotn = saturate(1 - dot(v, wn));
+
+        half3 rim = vdotn * vdotn * rc;
+        ccc += rim;
+    #endif
+
+    #if _DISSOLVE
+        DISSOLVE_TRANSFORM(ccc);
+    #endif
+
+    return half4(ccc, 1);
+}

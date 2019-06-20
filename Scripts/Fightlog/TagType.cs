@@ -1,0 +1,70 @@
+﻿// /**************************************************************************************************
+//  * Copyright (C) 2017-2019 FengYunChuanShuo
+//  * 
+//  * 
+//  * 
+//  *Author:     Noe  <chglove@live.cn>
+//  *Version:    0.1
+//  *Created:    2019-01-29      17:46
+//  *LastModify：2019-01-29      17:46
+//  ***************************************************************************************************/
+public enum TagType
+{
+    Random,
+    AIselectTime,
+    AddMonsterAI,
+    AIDistance,
+    GetLockEnermyCreature,
+    monsterAIDic,
+    AddPlayerAI,
+    RemovePlayerAi,
+    RemovePetAI,
+    RemoveMonsterAI,
+    OnPlayerEnterState,
+    selectAICreatureDicCount,
+    itemSelectTime,
+    aiRoleId,
+    onlineMembersCount,
+    realDamage,
+    uiDamage,
+    LogEffectDestory,
+    LogEffectDestory2,
+    CreateFlyEffect,
+    FlyEffectOnHit,
+    EffectOnUpdate,
+    EffectPos,
+    FollowEffectDestory,
+    SelectTime,
+    StratergySelect,
+    GetDistance,
+    CalcDistance,
+    StartAI,
+    SetAllAIPauseState,
+    AddPetAI,
+    MonsterDie,
+    SetDirection,
+    UpdateMovement,
+    GetMonsterRoomIndex,
+    EnterState,
+    DoQuitState,
+    OperateAI,
+    OnCreatureDied,
+    TeamQuit,
+    BuffApply,
+    maxStep,
+    ElementDamage,
+    PercentDamage,
+    BuffExpression,
+    StartRecord,
+    EndRecord,
+    LogColliders,
+    SetIgnoreObstacle,
+    Reborn,
+    LogCheckCollider,
+    StateTranslate,
+    currentMotionPos,
+    motionOrigin,
+    SetEnableUpdate,
+    StateFrame,
+    OnCreateCreatures,
+}

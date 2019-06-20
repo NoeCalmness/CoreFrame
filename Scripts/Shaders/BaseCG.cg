@@ -1,0 +1,72 @@
+﻿/****************************************************************************************************
+* Copyright (C) 2017-2019 FengYunChuanShuo
+*
+* Base cd definitions
+*
+* Author:   Y.Moon <chglove@live.cn>
+* Version:  0.1
+* Created:  2017-08-08
+*
+***************************************************************************************************/
+
+struct a2v
+{
+    float4 vertex : POSITION;
+    fixed4 color : COLOR;
+    float2 uv : TEXCOORD0;
+};
+
+struct v2f
+{
+    float4 vertex : SV_POSITION;
+    fixed4 color : COLOR;
+    float2 uv : TEXCOORD0;
+};
+
+struct v2f_wp
+{
+    float4 vertex : SV_POSITION;
+    fixed4 color : COLOR;
+    float2 uv : TEXCOORD0;
+    half4  wp : TEXCOORD1;
+    #if _DISSOLVE
+    float2 dv : TEXCOORD2;
+    #endif
+};
+
+struct a2v_o
+{
+    float4 v  : POSITION;
+    float3 n  : NORMAL;
+    float2 uv : TEXCOORD0;
+};
+
+struct v2f_o
+{
+    float4 p  : SV_POSITION;
+    fixed4 c  : COLOR;
+    float2 uv : TEXCOORD0;
+    #if _DISSOLVE
+    float2 dv : TEXCOORD1;
+    #endif
+};
+
+struct a2v_c
+{
+    float4 vertex : POSITION;
+    float3 normal : NORMAL;
+    float2 uv : TEXCOORD0;
+    float3 color : COLOR;
+}; 
+
+struct v2f_c
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD0;
+    float3 color: COLOR;
+    float3 wn : TEXCOORD1;
+    float3 wp : TEXCOORD2;
+    #if _DISSOLVE
+    float2 dv : TEXCOORD3;
+    #endif
+};

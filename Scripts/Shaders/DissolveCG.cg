@@ -1,0 +1,70 @@
+﻿/****************************************************************************************************
+* Copyright (C) 2017-2019 FengYunChuanShuo
+*
+* Base dissolve effect helpers and functions
+*
+* Author:   Y.Moon <chglove@live.cn>
+* Version:  0.1
+* Created:  2019-03-26
+*
+***************************************************************************************************/
+
+#ifndef DISABLE_DISSOLVE
+    #if _NOISE || _NOISE_EDGE
+    #include "SimplexNoise3D.cg"
+    #endif
+
+    half CalculateNoise(half bias, half threshold, half scale, half4 wp, half4 speed, half nbias)
+    {
+        #if _NOISE
+        bias = saturate(bias + (snoise(scale * (wp + speed * _Time.y)) - 0.5) * nbias);
+        #endif
+        return bias;
+    }
+
+    half CalculateEdgeNoise(half bias, half threshold, half scale, half4 wp, half4 speed, half nbias)
+    {
+        #if _NOISE_EDGE
+        bias = saturate(bias + (snoise(scale * (wp + speed * _Time.y)) - 0.5) * nbias);
+        #endif
+        return bias;
+    }
+
+    void ClipCenter(half t)
+    {
+        #if _DISSOLVE_CLIP_CENTER
+        clip(t);
+        #endif
+    }
+
+    #ifndef DISSOLVE_TEXCOORD
+    #define DISSOLVE_TEXCOORD o.dv = TRANSFORM_TEX(v.uv, _DissolveMaskTex)
+    #endif
+
+    #ifndef DISSOLVE_CLIP
+    #define DISSOLVE_CLIP \
+        half bias = tex2D(_DissolveMaskTex, i.dv).r;\
+        clip(bias - _DissolveThreshold);\
+        half t = _DissolveThreshold / bias
+    #endif // DISSOLVE_CLIP
+
+    #ifndef DISSOLVE_CLIP_CENTER
+    #define DISSOLVE_CLIP_CENTER ClipCenter(t - _DissolveEdge)
+    #endif
+
+    #ifndef DISSOLVE_CLIP_NOISE
+    #define DISSOLVE_CLIP_NOISE \
+        half bias = CalculateNoise(tex2D(_DissolveMaskTex, i.dv).r, _DissolveThreshold, _DissolveNoiseScale, i.wp, _DissolveNoiseSpeed, _DissolveNoiseBias);\
+        clip(bias - _DissolveThreshold);\
+        bias = CalculateEdgeNoise(bias, _DissolveThreshold, _DissolveEdgeNoiseScale, i.wp, _DissolveEdgeNoiseSpeed, _DissolveEdgeNoiseBias);\
+        half t = _DissolveThreshold / bias
+    #endif // DISSOLVE_CLIP_NOISE
+
+    #ifndef DISSOLVE_TRANSFORM
+    #define DISSOLVE_TRANSFORM(c) \
+        half3 dc = lerp(_DissolveEdgeColorA, _DissolveEdgeColorB, saturate((t - _DissolveEdge) / _DissolveEdgeWidth));\
+        t = smoothstep(_DissolveEdge, _DissolveEdge + _DissolveEdgeWidth, t);\
+        c.rgb = lerp(c.rgb, dc, t);\
+        c = pow(c, 1 + t * _DissolveEdgePower)
+    #endif // DISSOLVE_TRANSFORM
+#endif  // DISABLE_DISSOLVE

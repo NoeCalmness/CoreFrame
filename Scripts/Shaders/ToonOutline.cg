@@ -1,0 +1,52 @@
+﻿/****************************************************************************************************
+* Copyright (C) 2017-2019 FengYunChuanShuo
+*
+* Toon Shading Outline cg functions
+*
+* Author:   Y.Moon <chglove@live.cn>
+* Version:  0.1
+* Created:  2017-08-08
+*
+***************************************************************************************************/
+
+v2f_o vert_o(a2v_o v)
+{
+    v2f_o o;
+
+    #if _INVERTED
+        float3 wn = UnityObjectToWorldNormal(v.n);
+        float3 wp = mul(unity_ObjectToWorld, v.v);
+
+        wp.z = -wp.z;
+        wn.z = -wn.z;
+
+        float4 pos = UnityWorldToClipPos(wp);
+        float3 normal = mul(wn, (float3x3)UNITY_MATRIX_V);
+    #else
+        float4 pos = UnityObjectToClipPos(v.v);
+        float3 normal = mul((float3x3)UNITY_MATRIX_IT_MV, v.n);
+    #endif
+
+    pos.xy += TransformViewToProjection(normal.xy) * _OutlineWidth;
+
+    o.p  = pos;
+    o.uv = v.uv;
+    o.c  = _OutlineColor;
+
+    #if _DISSOLVE
+        DISSOLVE_TEXCOORD;
+    #endif
+
+    return o;
+}
+
+fixed4 frag_o(v2f_o i) : SV_Target
+{
+    #if _DISSOLVE
+        DISSOLVE_CLIP;
+    #endif
+
+    fixed4 albedo = tex2D(_MainTex, i.uv) * _OutlineBlend;
+
+    return i.c + albedo;
+}
